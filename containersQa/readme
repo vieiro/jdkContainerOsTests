@@ -1,0 +1,8 @@
+the tests in this folder are in in order, which moreover metters. we do not want to install and setup images all time
+
+
+
+ TODO: Integrate Confluence documentation with a file in this repository for documenting the tests cases.
+
+Current testcase document is here: 
+https://docs.engineering.redhat.com/display/RHELPLAN/ContainerQa
