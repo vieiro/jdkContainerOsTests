@@ -76,6 +76,7 @@ function pretest() {
   SKIPPED4="!skipped! jre only testing does not support this feature."
   SKIPPED5="!skipped! reproducers security now must be enabled by OTOOL_RUN_SECURITY_REPRODUCERS=true"
   SKIPPED6="!skipped! rhel 7 based images do not support this functionality."
+  SKIPPED7="!skipped! rhel 7 Os version of Podman does not support this functionality."
   export DISPLAY=:0
   if [ "x$OTOOL_CONTAINER_RUNTIME" = "x" ] ; then
     export PD_PROVIDER=podman
@@ -103,6 +104,13 @@ function skipIfJreExecution() {
 function skipIfRhel7Execution() {
   if [ "$OTOOL_BUILD_OS" == "el.7z"  ] ; then
       echo "$SKIPPED6"
+    exit
+  fi
+}
+
+function skipIfRhel7OsExecution() {
+  if [ "$OTOOL_OS" == "el.7z"  ] ; then
+      echo "$SKIPPED7"
     exit
   fi
 }
@@ -146,7 +154,7 @@ function pullImage() {
 }
 
 function checkImage() {
-   skipIfRhel7Execution
+   skipIfRhel7OsExecution
    IMG_DIGEST=`$PD_PROVIDER inspect $HASH --format "{{.Digest}}"`
    SOURCE_OF_TRUTH=`basename $TEST_DIGEST |sed "s/.*@//"`
 
@@ -537,20 +545,6 @@ function s2iLocal() {
     else
       cat $DF.orig | sed "s;/s2i/run;/s2i/run $ADDS;g;" > $DF.nw1
     fi
-    # simplified, expectig rhel only:
-#    if [ `getOsMajor` -eq 8 ] ; then
-##      cat $DF.nw1 | sed "s|USER root|USER root\nRUN yum config-manager --add-repo 'http://download.eng.brq.redhat.com/composes/finished/latest-RHEL-8/compose/AppStream/\
-##$basearch/os/'\nRUN yum install -y nodejs|" > $DF
-#      #echo
-#      echo "rhel8 repos not added"
-#      #unluckily, config-manager is notworking, removing nodejs from the project itself rather
-#    elif [ `getOsMajor` -eq 7 ] ; then
-#      # cat $DF.nw1 | sed "s|USER root|USER root\nRUN yum config-manager --add-repo 'http://download.fedoraproject.org/pub/epel/7/$\basearch'\\nRUN yum install -y nodejs|" > $DF
-#      echo "rhel7 repos not added"
-#      #unluckily, config-manager is notworking, removing nodejs from the project itself rather
-#    else
-#      echo "no rhel-specific changes"
-#    fi
     cat $DF.nw1 | tee $DF
     buildFileWithHash $DF
   popd
@@ -702,9 +696,9 @@ function checkHardcodedJdks() {
   if [ "$OTOOL_jresdk" == "jre"  ] ; then
     echo "otool jresdk settings is: $OTOOL_jresdk"
     echo "Check version based off java -version call."
-    JRE_8_VERSION='1.8.0_382-b05'
-    JRE_11_VERSION='11.0.20+8-LTS'
-    JRE_17_VERSION='17.0.8+7-LTS'
+    JRE_8_VERSION='1.8.0_392-b08'
+    JRE_11_VERSION='11.0.21+9-LTS'
+    JRE_17_VERSION='17.0.9+9-LTS'
     cat $(getOldJavaVersionLog)
     cat $(getOldJavaVersionLog) | grep "openjdk version"
     cat $(getOldJavaVersionLog) | grep -e "$JRE_11_VERSION" -e "$JRE_8_VERSION" -e "$JRE_17_VERSION"
@@ -712,7 +706,7 @@ function checkHardcodedJdks() {
   else
     cat $(getOldMvnVersionLog)
     cat $(getOldMvnVersionLog) | grep "Java version:"
-    cat $(getOldMvnVersionLog) | grep -e "Java version: 11.0.20" -e "Java version: 1.8.0_382" -e "Java version: 17.0.8"
+    cat $(getOldMvnVersionLog) | grep -e "Java version: 11.0.21" -e "Java version: 1.8.0_392" -e "Java version: 17.0.9"
   fi    
 
 }
