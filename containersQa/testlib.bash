@@ -342,7 +342,7 @@ function mavenCreateAndRun() {
     # collections dont like multiline
     runOnBaseDirBash "`sclEnable` mvn -B archetype:generate -DgroupId=org.test.rhimg  -DartifactId=rhimg -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4 -DinteractiveMode=false && cd rhimg && `sclEnable` mvn -B clean install && `sclEnable` java -cp  target/rhimg-1.0-SNAPSHOT.jar org.test.rhimg.App"
   else
-    runOnBaseDirBash "mvn -B archetype:generate -DgroupId=org.test.rhimg  -DartifactId=rhimg -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4 -DinteractiveMode=false &&  cd rhimg && mvn -B clean install && java -cp  target/rhimg-1.0-SNAPSHOT.jar org.test.rhimg.App"
+    runOnBaseDirBash "mvn -B archetype:generate -DgroupId=org.test.rhimg  -DartifactId=rhimg -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4 -DinteractiveMode=false &&  cd rhimg && sed -i 's;<maven.compiler.source>1.7</maven.compiler.source>;<maven.compiler.source>1.8</maven.compiler.source>;g' pom.xml && sed -i 's;<maven.compiler.target>1.7</maven.compiler.target>;<maven.compiler.target>1.8</maven.compiler.target>;g' pom.xml && mvn -B clean install && java -cp  target/rhimg-1.0-SNAPSHOT.jar org.test.rhimg.App"
   fi
 }
 
@@ -570,6 +570,13 @@ function s2iBasic() {
   local d=`mktemp -d`
   pushd $d
     mvn -B archetype:generate -DgroupId=org.test.rhimg  -DartifactId=rhimg -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4 -DinteractiveMode=false
+    # Need to modify this generated pom file for a maven.compiler.source & target to be 1.8 rather than 1.7.
+    pushd rhimg
+       sed -i "s;<maven.compiler.source>1.7</maven.compiler.source>;<maven.compiler.source>1.8</maven.compiler.source>;g" pom.xml
+       sed -i "s;<maven.compiler.target>1.7</maven.compiler.target>;<maven.compiler.target>1.8</maven.compiler.target>;g" pom.xml
+       echo "Print the pom.xml file."
+       cat pom.xml
+    popd
     git config --global user.name "conatinerQa bot"
     git config --global user.email "ContBont@qa.com"
     git init --bare rhimgrepo
@@ -699,14 +706,15 @@ function checkHardcodedJdks() {
     JRE_8_VERSION='1.8.0_392-b08'
     JRE_11_VERSION='11.0.21+9-LTS'
     JRE_17_VERSION='17.0.9+9-LTS'
+    JRE_21_VERSION='21.0.1+12-LTS'
     cat $(getOldJavaVersionLog)
     cat $(getOldJavaVersionLog) | grep "openjdk version"
-    cat $(getOldJavaVersionLog) | grep -e "$JRE_11_VERSION" -e "$JRE_8_VERSION" -e "$JRE_17_VERSION"
+    cat $(getOldJavaVersionLog) | grep -e "$JRE_11_VERSION" -e "$JRE_8_VERSION" -e "$JRE_17_VERSION" -e "$JRE_21_VERSION"
 
   else
     cat $(getOldMvnVersionLog)
     cat $(getOldMvnVersionLog) | grep "Java version:"
-    cat $(getOldMvnVersionLog) | grep -e "Java version: 11.0.21" -e "Java version: 1.8.0_392" -e "Java version: 17.0.9"
+    cat $(getOldMvnVersionLog) | grep -e "Java version: 11.0.21" -e "Java version: 1.8.0_392" -e "Java version: 17.0.9" -e "Java version: 21.0.1"
   fi    
 
 }
@@ -720,6 +728,8 @@ function checkJdkMajorVersion() {
     VERSION_CHECK_KEY='openjdk version \"1.8'
   elif [[ $OTOOL_JDK_VERSION -eq 17 ]]; then
     VERSION_CHECK_KEY='openjdk version \"17.0'
+  elif [[ $OTOOL_JDK_VERSION -eq 21 ]]; then
+    VERSION_CHECK_KEY='openjdk version \"21.0'
   else
     echo "Environment variable 'OTOOL_JDK_VERSION' not accepted. Please Debug."
     VERSION_CHECK_KEY='-1'
