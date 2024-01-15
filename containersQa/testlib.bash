@@ -41,7 +41,7 @@ function processArguments() {
     exit 1
   # I am not 100% sure this is the best approach. It may be enough that the command does not fail without needing the exact return value.
   # I am running this to ensure the string passed in as the image repo actually exisits.
-  elif [[ $(curl --silent -f -I -k $ARG_JDK |grep -E "^HTTP" | awk -F " " '{print $2}')==302 ]]
+  elif [[ $(curl --silent -f -I -k $ARG_JDK |grep -E "^HTTP" | awk -F " " '{print $2}') == 302 ]]
   then
     echo "OpenJDK Container Image found on Brew."
     JDK_CONTAINER_IMAGE=$ARG_JDK 
@@ -703,10 +703,10 @@ function checkHardcodedJdks() {
   if [ "$OTOOL_jresdk" == "jre"  ] ; then
     echo "otool jresdk settings is: $OTOOL_jresdk"
     echo "Check version based off java -version call."
-    JRE_8_VERSION='1.8.0_392-b08'
-    JRE_11_VERSION='11.0.21+9-LTS'
-    JRE_17_VERSION='17.0.9+9-LTS'
-    JRE_21_VERSION='21.0.1+12-LTS'
+    JRE_8_VERSION='1.8.0_402-b06'
+    JRE_11_VERSION='11.0.22+7-LTS'
+    JRE_17_VERSION='17.0.10+7-LTS'
+    JRE_21_VERSION='21.0.2+13-LTS'
     cat $(getOldJavaVersionLog)
     cat $(getOldJavaVersionLog) | grep "openjdk version"
     cat $(getOldJavaVersionLog) | grep -e "$JRE_11_VERSION" -e "$JRE_8_VERSION" -e "$JRE_17_VERSION" -e "$JRE_21_VERSION"
@@ -714,7 +714,7 @@ function checkHardcodedJdks() {
   else
     cat $(getOldMvnVersionLog)
     cat $(getOldMvnVersionLog) | grep "Java version:"
-    cat $(getOldMvnVersionLog) | grep -e "Java version: 11.0.21" -e "Java version: 1.8.0_392" -e "Java version: 17.0.9" -e "Java version: 21.0.1"
+    cat $(getOldMvnVersionLog) | grep -e "Java version: 11.0.22" -e "Java version: 1.8.0_402" -e "Java version: 17.0.10" -e "Java version: 21.0.2"
   fi    
 
 }
