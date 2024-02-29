@@ -534,14 +534,14 @@ function s2iLocal() {
     # defined in the calling function if it is attempting to build a Jenkins plug-in.
     if [[ "$JENKINS_BUILD" == "yes" ]] ; then
         # copy the jenkins settings file to the local tmp directory
-        $s2iBin build -e "$MAIN" -e "$ARGS" -e "$SETTING_ARGS" "$REPO" "$HASH" "$NAME" --as-dockerfile $DF.orig
+        $s2iBin build -e "$MAIN" -e "$ARGS" -e "$SETTING_ARGS" "$REPO" "$HASH" "$NAME" --assemble-user $USERNAME --as-dockerfile $DF.orig
         cp $LIBCQA_SCRIPT_DIR/jenkins_settings.xml  upload/src
     else
-        $s2iBin build -e "$MAIN" -e "$ARGS" "$REPO" "$HASH" "$NAME" --as-dockerfile $DF.orig
+        $s2iBin build -e "$MAIN" -e "$ARGS" "$REPO" "$HASH" "$NAME" --assemble-user $USERNAME --as-dockerfile $DF.orig
     fi
     if [ "x$OVERWRITE_USER" == x ] ; then
       #update the container file for proper functionality
-      cat $DF.orig | sed "s;/usr/libexec;/usr/local;g" | sed "s;1001:0;$USERNAME:$USERNAME;g" | sed "s;1001;$USERNAME;g" | sed "s;/s2i/run;/s2i/run $ADDS;g;" > $DF.nw1
+      cat $DF.orig | sed "s;/usr/libexec;/usr/local;g" | sed "s;1001:0;$USERNAME:$USERNAME;g" | sed "s;/s2i/run;/s2i/run $ADDS;g;" > $DF.nw1
     else
       cat $DF.orig | sed "s;/s2i/run;/s2i/run $ADDS;g;" > $DF.nw1
     fi
