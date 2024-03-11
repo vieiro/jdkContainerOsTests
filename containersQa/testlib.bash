@@ -861,6 +861,11 @@ function checkOtherUserWorks() {
   test -z "$OUTPUT"
 }
 
+# This test is added to check that tar is installed in all Openjdk images.
+#  https://issues.redhat.com/browse/OPENJDK-2588
+function testTarIsInstalled() {
+  runOnBaseDir  tar --version
+}
 #  SECTION FOR BUILDING CONTAINER IMAGES FOR TEST. 
 #   Ultimately these may be broken out to seperate file.
 
