@@ -493,13 +493,13 @@ function prepareS2I() {
     return
   fi
   if [ `uname -m` == "x86_64" ] ; then
-    local go="https://dl.google.com/go/go1.14.linux-amd64.tar.gz"
+    local go="https://go.dev/dl/go1.22.3.linux-amd64.tar.gz"
   elif [ `uname -m` == "s390x" ] ; then
-    local go="https://dl.google.com/go/go1.14.linux-s390x.tar.gz"
+    local go="https://go.dev/dl/go1.22.3.linux-s390x.tar.gz"
   elif [ `uname -m` == "ppc64le" ] ; then
-    local go="https://dl.google.com/go/go1.14.linux-ppc64le.tar.gz"
+    local go="https://go.dev/dl/go1.22.3.linux-ppc64le.tar.gz"
   elif [ `uname -m` == "aarch64" ] ; then
-    local go="https://dl.google.com/go/go1.14.linux-arm64.tar.gz"
+    local go="https://go.dev/dl/go1.22.3.linux-arm64.tar.gz"
   else
     echo $SKIPPED
     s2iBin="undef"
@@ -513,7 +513,7 @@ function prepareS2I() {
     goPath="$PWD/go/bin"
     git clone "https://github.com/openshift/source-to-image.git"
     pushd source-to-image
-      git checkout tags/v1.3.1
+      git checkout tags/v1.4.0
       PATH="$PATH:$goPath" make
       s2iBin=$(find $PWD/_output/local/bin/linux/ -type f)
     popd
