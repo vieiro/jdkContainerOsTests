@@ -545,6 +545,12 @@ function s2iLocal() {
     else
       cat $DF.orig | sed "s;/s2i/run;/s2i/run $ADDS;g;" > $DF.nw1
     fi
+    if [ "x$COMMIT_HASH" != x ] ; then
+      #cd into the source folder and checkout the koji source based on the known commit
+      pushd upload/src
+         git checkout "$COMMIT_HASH"
+      popd
+    fi
     cat $DF.nw1 | tee $DF
     buildFileWithHash $DF
   popd
@@ -625,6 +631,7 @@ function s2iLocaMultiModWorksNoMain() {
   REPO="https://github.com/judovana/jenkins-scm-koji-plugin.git" 
   NAME="multimod_nomain"
   ADDS=""
+  COMMIT_HASH="048d32f1a311ae97c87bd885dd17cac6dddb5f94"
   JENKINS_BUILD="yes"
   s2iLocal
 }
@@ -637,6 +644,7 @@ function s2iLocaMultiModWorksMain() {
   REPO="https://github.com/judovana/jenkins-scm-koji-plugin.git" 
   NAME="multimod_main"
   ADDS=""
+  COMMIT_HASH="048d32f1a311ae97c87bd885dd17cac6dddb5f94"
   JENKINS_BUILD="yes"
   s2iLocal 
 }
