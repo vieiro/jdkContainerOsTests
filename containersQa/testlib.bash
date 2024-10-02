@@ -602,6 +602,29 @@ function s2iBasic() {
   s2iLocal
 }
 
+function s2iBinaryCopy() {
+  prepareS2I
+  setUser
+
+  #$JDK_CONTAINER_IMAGE
+
+
+  if [ "x$s2iBin" == "xundef" -o "x$s2iBin" == "x" ] ; then
+    echo $SKIPPED
+    return
+  fi
+  local d=`mktemp -d`
+  pushd $d
+    DF=s2iDockerFile
+
+    $s2iBin build "$APP_SRC" "$BASEIMG" "$OUTIMG" --pull-policy never --context-dir=$CONTEXTDIR -r=${rev} \
+                  --loglevel 1 --as-dockerfile $DF --image-scripts-url image:///usr/local/s2i
+
+  buildFileWithHash $DF
+  popd
+  rm -rf $d
+}
+
 function s2iLocalDeps() {
   skipIfJreExecution
   MAIN="JAVA_MAIN_CLASS=org.judovana.calendarmaker.App"
@@ -647,6 +670,16 @@ function s2iLocaMultiModWorksMain() {
   COMMIT_HASH="048d32f1a311ae97c87bd885dd17cac6dddb5f94"
   JENKINS_BUILD="yes"
   s2iLocal 
+}
+
+function s2iBinaryOnlyMode() {
+  skipIfJreExecution
+  APP_SRC="https://github.com/jboss-container-images/openjdk-test-applications"
+  CONTEXTDIR="spring-boot-sample-simple/target" # trigger binary build
+  rev="master"
+  OUTIMG="s2i-out"
+  BASEIMG="$HASH"
+  s2iBinaryCopy
 }
 
 function getS2iLocalDepsBuildLog() {
