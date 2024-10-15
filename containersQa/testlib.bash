@@ -744,10 +744,10 @@ function checkHardcodedJdks() {
   if [ "$OTOOL_jresdk" == "jre"  ] ; then
     echo "otool jresdk settings is: $OTOOL_jresdk"
     echo "Check version based off java -version call."
-    JRE_8_VERSION='1.8.0_422-b05'
-    JRE_11_VERSION='11.0.24+8-LTS'
-    JRE_17_VERSION='17.0.12+7-LTS'
-    JRE_21_VERSION='21.0.4+7-LTS'
+    JRE_8_VERSION='1.8.0_432-b06'
+    JRE_11_VERSION='11.0.25+9-LTS'
+    JRE_17_VERSION='17.0.13+11-LTS'
+    JRE_21_VERSION='21.0.5+10-LTS'
     cat $(getOldJavaVersionLog)
     cat $(getOldJavaVersionLog) | grep "openjdk version"
     cat $(getOldJavaVersionLog) | grep -e "$JRE_11_VERSION" -e "$JRE_8_VERSION" -e "$JRE_17_VERSION" -e "$JRE_21_VERSION"
@@ -755,7 +755,7 @@ function checkHardcodedJdks() {
   else
     cat $(getOldMvnVersionLog)
     cat $(getOldMvnVersionLog) | grep "Java version:"
-    cat $(getOldMvnVersionLog) | grep -e "Java version: 11.0.24" -e "Java version: 1.8.0_422" -e "Java version: 17.0.12" -e "Java version: 21.0.4"
+    cat $(getOldMvnVersionLog) | grep -e "Java version: 11.0.25" -e "Java version: 1.8.0_432" -e "Java version: 17.0.13" -e "Java version: 21.0.5"
   fi    
 
 }
