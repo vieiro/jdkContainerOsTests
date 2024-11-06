@@ -182,6 +182,10 @@ function runOnBaseDirBashOtherUser() {
   $PD_PROVIDER run -i -u 12324 $HASH bash -c "$1"
 }
 
+function runOnBaseDirBashRootUser() {
+  $PD_PROVIDER run -i -u root $HASH bash -c "$1"
+}
+
 function lsLUsrLibJvm() {
   runOnBaseDir  ls -l /usr/lib/jvm
 }
@@ -924,4 +928,37 @@ function newUserCheck() {
 EOF
     $PD_PROVIDER build -f $podmanfile .
 
+}
+
+function setAlgorithmTestsUrlVars {
+  checkAlgorithmsUrl="https://raw.githubusercontent.com/rh-openjdk/jtreg-buffer/ea3c06d3d67cb05/test/reproducers/checkAlgorithms/CheckAlgorithms.java"
+  cipherListUrl="https://raw.githubusercontent.com/rh-openjdk/jtreg-buffer/ea3c06d3d67cb05/test/reproducers/1906862/CipherList.java"
+}
+
+function listCryptoAlgorithms() {
+  skipIfJreExecution
+  # curl downloads the needed test files inside of the container, compiles them and runs them
+  runOnBaseDirBash "cd /tmp && curl -O $checkAlgorithmsUrl && curl -O $cipherListUrl && \
+                    javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
+}
+
+function listCryptoAlgorithmsWithFipsSet() {
+  skipIfJreExecution
+  # curl downloads the needed test files inside of the container, compiles them and runs them
+  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS && cd /tmp && curl -O $checkAlgorithmsUrl && curl -O $cipherListUrl && \
+                            javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
+}
+
+function listCryptoProviders() {
+  skipIfJreExecution
+  # curl downloads the needed test files inside of the container, compiles them and runs them
+  runOnBaseDirBash "cd /tmp && curl -O $checkAlgorithmsUrl && curl -O $cipherListUrl && \
+                    javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
+}
+
+function listCryptoProvidersWithFipsSet() {
+  skipIfJreExecution
+  # curl downloads the needed test files inside of the container, compiles them and runs them
+  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS && cd /tmp && curl -O $checkAlgorithmsUrl && curl -O $cipherListUrl && \
+                            javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
 }
