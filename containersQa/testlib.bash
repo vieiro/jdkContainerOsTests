@@ -931,8 +931,8 @@ EOF
 }
 
 function setAlgorithmTestsUrlVars {
-  checkAlgorithmsUrl="https://raw.githubusercontent.com/rh-openjdk/jtreg-buffer/ea3c06d3d67cb05/test/reproducers/checkAlgorithms/CheckAlgorithms.java"
-  cipherListUrl="https://raw.githubusercontent.com/rh-openjdk/jtreg-buffer/ea3c06d3d67cb05/test/reproducers/1906862/CipherList.java"
+  checkAlgorithmsUrl="https://raw.githubusercontent.com/rh-openjdk/jtreg-buffer/main/test/reproducers/checkAlgorithms/CheckAlgorithms.java"
+  cipherListUrl="https://raw.githubusercontent.com/rh-openjdk/jtreg-buffer/main/test/reproducers/1906862/CipherList.java"
 }
 
 function listCryptoAlgorithms() {
