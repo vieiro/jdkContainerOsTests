@@ -182,6 +182,10 @@ function runOnBaseDirBashOtherUser() {
   $PD_PROVIDER run -i -u 12324 $HASH bash -c "$1"
 }
 
+function runOnBaseDirBashRootUser() {
+  $PD_PROVIDER run -i -u root $HASH bash -c "$1"
+}
+
 function lsLUsrLibJvm() {
   runOnBaseDir  ls -l /usr/lib/jvm
 }
@@ -924,4 +928,39 @@ function newUserCheck() {
 EOF
     $PD_PROVIDER build -f $podmanfile .
 
+}
+
+function setAlgorithmTestsVars {
+  checkAlgorithmsCode=`cat $LIBCQA_SCRIPT_DIR/CheckAlgorithms.java | sed -e "s/'//g"` # the ' characters are escaping and making problems, deleting them here
+  cipherListCode=`cat $LIBCQA_SCRIPT_DIR/CipherList.java`
+}
+
+function listCryptoAlgorithms() {
+  skipIfJreExecution
+  # curl downloads the needed test files inside of the container, compiles them and runs them
+  runOnBaseDirBash "echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
+                    javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
+}
+
+function listCryptoAlgorithmsWithFipsSet() {
+  skipIfJreExecution
+  # curl downloads the needed test files inside of the container, compiles them and runs them
+  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS && \
+                            echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
+                            javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
+}
+
+function listCryptoProviders() {
+  skipIfJreExecution
+  # curl downloads the needed test files inside of the container, compiles them and runs them
+  runOnBaseDirBash "echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
+                    javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
+}
+
+function listCryptoProvidersWithFipsSet() {
+  skipIfJreExecution
+  # curl downloads the needed test files inside of the container, compiles them and runs them
+  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS && \
+                            echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
+                            javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
 }
