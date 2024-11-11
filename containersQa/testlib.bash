@@ -930,35 +930,37 @@ EOF
 
 }
 
-function setAlgorithmTestsUrlVars {
-  checkAlgorithmsUrl="https://raw.githubusercontent.com/rh-openjdk/jtreg-buffer/main/test/reproducers/checkAlgorithms/CheckAlgorithms.java"
-  cipherListUrl="https://raw.githubusercontent.com/rh-openjdk/jtreg-buffer/main/test/reproducers/1906862/CipherList.java"
+function setAlgorithmTestsVars {
+  checkAlgorithmsCode=`cat $LIBCQA_SCRIPT_DIR/CheckAlgorithms.java | sed -e "s/'//g"` # the ' characters are escaping and making problems, deleting them here
+  cipherListCode=`cat $LIBCQA_SCRIPT_DIR/CipherList.java`
 }
 
 function listCryptoAlgorithms() {
   skipIfJreExecution
   # curl downloads the needed test files inside of the container, compiles them and runs them
-  runOnBaseDirBash "cd /tmp && curl -O $checkAlgorithmsUrl && curl -O $cipherListUrl && \
+  runOnBaseDirBash "echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
                     javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
 }
 
 function listCryptoAlgorithmsWithFipsSet() {
   skipIfJreExecution
   # curl downloads the needed test files inside of the container, compiles them and runs them
-  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS && cd /tmp && curl -O $checkAlgorithmsUrl && curl -O $cipherListUrl && \
+  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS && \
+                            echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
                             javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
 }
 
 function listCryptoProviders() {
   skipIfJreExecution
   # curl downloads the needed test files inside of the container, compiles them and runs them
-  runOnBaseDirBash "cd /tmp && curl -O $checkAlgorithmsUrl && curl -O $cipherListUrl && \
+  runOnBaseDirBash "echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
                     javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
 }
 
 function listCryptoProvidersWithFipsSet() {
   skipIfJreExecution
   # curl downloads the needed test files inside of the container, compiles them and runs them
-  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS && cd /tmp && curl -O $checkAlgorithmsUrl && curl -O $cipherListUrl && \
+  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS && \
+                            echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
                             javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
 }

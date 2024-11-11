@@ -18,5 +18,5 @@ source $SCRIPT_DIR/testlib.bash
 parseArguments "$@"
 processArguments
 setup
-setAlgorithmTestsUrlVars
+setAlgorithmTestsVars
 listCryptoAlgorithms 2>&1| tee $REPORT_FILE
