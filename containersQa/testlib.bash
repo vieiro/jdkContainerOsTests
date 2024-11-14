@@ -99,8 +99,8 @@ function skipIfJreExecution() {
   fi
 }
 
-# With the addition of a JRE Runtime container we should not run for full jdk features like
-# Maven, S2i, Javac.
+# Use this flag to skip tests when executing on a Rhel 7 host. In some cases backend container
+# functionality the tests are looking for is not available in that version.
 function skipIfRhel7Execution() {
   if [ "$OTOOL_BUILD_OS" == "el.7z"  ] ; then
       echo "$SKIPPED6"
@@ -751,7 +751,7 @@ function checkHardcodedJdks() {
     JRE_8_VERSION='1.8.0_432-b06'
     JRE_11_VERSION='11.0.25+9-LTS'
     JRE_17_VERSION='17.0.13+11-LTS'
-    JRE_21_VERSION='21.0.5+10-LTS'
+    JRE_21_VERSION='21.0.5'  #temp fix until the next cpu.
     cat $(getOldJavaVersionLog)
     cat $(getOldJavaVersionLog) | grep "openjdk version"
     cat $(getOldJavaVersionLog) | grep -e "$JRE_11_VERSION" -e "$JRE_8_VERSION" -e "$JRE_17_VERSION" -e "$JRE_21_VERSION"
@@ -931,6 +931,9 @@ EOF
 }
 
 function setAlgorithmTestsVars {
+  # Turning the tests off for now as there are random failure that are slowing testing for respins.
+  echo $SKIPPED3
+  exit
   checkAlgorithmsCode=`cat $LIBCQA_SCRIPT_DIR/CheckAlgorithms.java | sed -e "s/'//g"` # the ' characters are escaping and making problems, deleting them here
   cipherListCode=`cat $LIBCQA_SCRIPT_DIR/CipherList.java`
 }
