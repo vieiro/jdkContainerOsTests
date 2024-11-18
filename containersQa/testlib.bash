@@ -122,7 +122,7 @@ function setUser() {
     export USERNAME="$OVERWRITE_USER"
     return
   fi
-  if $PD_PROVIDER inspect $HASH --format "{{.Labels.name}}" | grep -e 'ubi9'  ; then
+  if $PD_PROVIDER inspect $HASH --format "{{.Labels.name}}" | grep -e 'ubi9' -e 'rhel9' ; then
       export USERNAME='default'
   else
       export USERNAME='jboss'
