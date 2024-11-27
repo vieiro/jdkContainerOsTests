@@ -18,5 +18,5 @@ source $SCRIPT_DIR/testlib.bash
 parseArguments "$@"
 processArguments
 setup
-setAlgorithmTestsVars
-listCryptoProvidersWithFipsSet 2>&1| tee $REPORT_FILE
+setupAlgorithmTesting
+validateManualSettingFipsWithNoCrash 2>&1| tee $REPORT_FILE

@@ -77,6 +77,7 @@ function pretest() {
   SKIPPED5="!skipped! reproducers security now must be enabled by OTOOL_RUN_SECURITY_REPRODUCERS=true"
   SKIPPED6="!skipped! rhel 7 based images do not support this functionality."
   SKIPPED7="!skipped! rhel 7 Os version of Podman does not support this functionality."
+  SKIPPED8="!skipped! Skipping FIPS algorithms/providers tests."
   export DISPLAY=:0
   if [ "x$OTOOL_CONTAINER_RUNTIME" = "x" ] ; then
     export PD_PROVIDER=podman
@@ -930,40 +931,71 @@ EOF
 
 }
 
-function setAlgorithmTestsVars {
-  # Turning the tests off for now as there are random failure that are slowing testing for respins.
-  echo $SKIPPED3
-  exit
+function setupAlgorithmTesting {
+  # Skipping the FIPS tests if $OTOOL_CONTAINERQA_RUNCRYPTO is set to anything other than "true"
+  if [ "$OTOOL_CONTAINERQA_RUNCRYPTO" != "true"  ] ; then
+    echo "$SKIPPED8"
+    exit
+  fi
+
   checkAlgorithmsCode=`cat $LIBCQA_SCRIPT_DIR/CheckAlgorithms.java | sed -e "s/'//g"` # the ' characters are escaping and making problems, deleting them here
   cipherListCode=`cat $LIBCQA_SCRIPT_DIR/CipherList.java`
 }
 
+function logHostAndContainerCryptoPolicy() {
+  hostCryptoPolicy=`update-crypto-policies --show`
+  containerCryptoPolicy=`runOnBaseDirBash "update-crypto-policies --show"`
+
+  # host is RHEL in FIPS mode, the crypto policies on host and in the container should match
+  if [ "$OTOOL_OS_NAME" == "el" ] && [ "$OTOOL_cryptosetup" == "fips" ] ; then
+    if [ "$hostCryptoPolicy" == "$containerCryptoPolicy" ] ; then
+      echo "Crypto policy on RHEL host is the same as in the container ($containerCryptoPolicy), which was expected."
+    else
+      echo "Crypto policy on RHEL host ($hostCryptoPolicy) is not the same as in the container ($containerCryptoPolicy), which was unexpected."
+    fi
+
+  # host is not RHEL in FIPS mode, the crypto policies may or may not match, just logging them
+  else
+    echo "Crypto policy on host is $hostCryptoPolicy, and in container $containerCryptoPolicy."
+  fi
+}
+
+function validateManualSettingFipsWithNoCrash() {
+  set +e
+  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS"
+  containerReturnCode="$?"
+  set -e
+
+  # host is RHEL in FIPS mode, the command should fail (return non-zero exit code) in container
+  if [ "$OTOOL_OS_NAME" == "el" ] && [ "$OTOOL_cryptosetup" == "fips" ] ; then
+    if [ "$containerReturnCode" != 0 ] ; then
+      echo "RHEL host is in FIPS, container returned $containerReturnCode, which was expected."
+    else
+      echo "RHEL host is in FIPS, container returned $containerReturnCode, which was unexpected, expected not zero."
+    fi
+
+  # host is RHEL not in FIPS mode, the command shouldn't fail
+  elif [ "$OTOOL_OS_NAME" == "el" ] ; then
+    if [ "$containerReturnCode" == 0 ] ; then
+      echo "RHEL host is not in FIPS, container returned $containerReturnCode, which was expected."
+    else
+      echo "RHEL host is not in FIPS, container returned $containerReturnCode, which was unexpected, expected zero."
+    fi
+
+  # other variants (for example Fedora), the behavior is just logged
+  else
+    echo "Non-RHEL host, undefined FIPS, container returned $containerReturnCode."
+  fi
+}
+
 function listCryptoAlgorithms() {
   skipIfJreExecution
-  # curl downloads the needed test files inside of the container, compiles them and runs them
   runOnBaseDirBash "echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
                     javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
 }
 
-function listCryptoAlgorithmsWithFipsSet() {
-  skipIfJreExecution
-  # curl downloads the needed test files inside of the container, compiles them and runs them
-  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS && \
-                            echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
-                            javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
-}
-
 function listCryptoProviders() {
   skipIfJreExecution
-  # curl downloads the needed test files inside of the container, compiles them and runs them
   runOnBaseDirBash "echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
                     javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
-}
-
-function listCryptoProvidersWithFipsSet() {
-  skipIfJreExecution
-  # curl downloads the needed test files inside of the container, compiles them and runs them
-  runOnBaseDirBashRootUser "update-crypto-policies --set FIPS && \
-                            echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
-                            javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
 }
