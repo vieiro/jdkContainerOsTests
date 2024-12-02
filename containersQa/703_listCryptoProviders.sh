@@ -19,4 +19,4 @@ parseArguments "$@"
 processArguments
 setup
 setupAlgorithmTesting
-listCryptoProviders 2>&1| tee $REPORT_FILE
+listCryptoProviders

@@ -990,12 +990,18 @@ function validateManualSettingFipsWithNoCrash() {
 
 function listCryptoAlgorithms() {
   skipIfJreExecution
-  runOnBaseDirBash "echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
-                    javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
+  set +x
+  commandAlgorithms="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
+  echo "runOnBaseDirBash $commandAlgorithms"
+  runOnBaseDirBash "$commandAlgorithms" 2>&1| tee $REPORT_FILE
+  set -x
 }
 
 function listCryptoProviders() {
   skipIfJreExecution
-  runOnBaseDirBash "echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && \
-                    javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
+  set +x
+  commandProviders="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
+  echo "runOnBaseDirBash $commandProviders"
+  runOnBaseDirBash "$commandProviders" 2>&1| tee $REPORT_FILE
+  set -x
 }
