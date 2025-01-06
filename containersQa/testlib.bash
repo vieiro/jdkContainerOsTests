@@ -942,7 +942,7 @@ function setupAlgorithmTesting {
   cipherListCode=`cat $LIBCQA_SCRIPT_DIR/CipherList.java`
 }
 
-function logHostAndContainerCryptoPolicy() {
+function checkHostAndContainerCryptoPolicy() {
   hostCryptoPolicy=`update-crypto-policies --show`
   containerCryptoPolicy=`runOnBaseDirBash "update-crypto-policies --show"`
 
@@ -950,13 +950,16 @@ function logHostAndContainerCryptoPolicy() {
   if [ "$OTOOL_OS_NAME" == "el" ] && [ "$OTOOL_cryptosetup" == "fips" ] ; then
     if [ "$hostCryptoPolicy" == "$containerCryptoPolicy" ] ; then
       echo "Crypto policy on RHEL host is the same as in the container ($containerCryptoPolicy), which was expected."
+      exit
     else
       echo "Crypto policy on RHEL host ($hostCryptoPolicy) is not the same as in the container ($containerCryptoPolicy), which was unexpected."
+      exit 1
     fi
 
   # host is not RHEL in FIPS mode, the crypto policies may or may not match, just logging them
   else
     echo "Crypto policy on host is $hostCryptoPolicy, and in container $containerCryptoPolicy."
+    exit
   fi
 }
 
@@ -970,37 +973,54 @@ function validateManualSettingFipsWithNoCrash() {
   if [ "$OTOOL_OS_NAME" == "el" ] && [ "$OTOOL_cryptosetup" == "fips" ] ; then
     if [ "$containerReturnCode" != 0 ] ; then
       echo "RHEL host is in FIPS, container returned $containerReturnCode, which was expected."
+      exit
     else
       echo "RHEL host is in FIPS, container returned $containerReturnCode, which was unexpected, expected not zero."
+      exit 1
     fi
 
   # host is RHEL not in FIPS mode, the command shouldn't fail
   elif [ "$OTOOL_OS_NAME" == "el" ] ; then
     if [ "$containerReturnCode" == 0 ] ; then
       echo "RHEL host is not in FIPS, container returned $containerReturnCode, which was expected."
+      exit
     else
       echo "RHEL host is not in FIPS, container returned $containerReturnCode, which was unexpected, expected zero."
+      exit 1
     fi
 
   # other variants (for example Fedora), the behavior is just logged
   else
     echo "Non-RHEL host, undefined FIPS, container returned $containerReturnCode."
+    exit
   fi
 }
 
-function listCryptoAlgorithms() {
+function assertCryptoAlgorithms() {
   skipIfJreExecution
   set +x
-  commandAlgorithms="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
+
+  if [ "$OTOOL_OS" == "el.9" ] ; then
+    commandAlgorithms="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert algorithms el9"
+  else
+    commandAlgorithms="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert algorithms"
+  fi
+
   echo "runOnBaseDirBash $commandAlgorithms"
   runOnBaseDirBash "$commandAlgorithms" 2>&1| tee $REPORT_FILE
   set -x
 }
 
-function listCryptoProviders() {
+function assertCryptoProviders() {
   skipIfJreExecution
   set +x
-  commandProviders="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
+
+  if [ "$OTOOL_OS" == "el.9" ] ; then
+    commandProviders="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert providers el9"
+  else
+    commandProviders="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert providers"
+  fi
+
   echo "runOnBaseDirBash $commandProviders"
   runOnBaseDirBash "$commandProviders" 2>&1| tee $REPORT_FILE
   set -x

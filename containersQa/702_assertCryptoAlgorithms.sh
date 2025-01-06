@@ -19,4 +19,4 @@ parseArguments "$@"
 processArguments
 setup
 setupAlgorithmTesting
-listCryptoAlgorithms
+assertCryptoAlgorithms
