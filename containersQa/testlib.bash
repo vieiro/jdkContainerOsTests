@@ -935,7 +935,7 @@ function setupAlgorithmTesting {
   # Skipping the FIPS tests if $OTOOL_CONTAINERQA_RUNCRYPTO is set to anything other than "true"
   if [ "$OTOOL_CONTAINERQA_RUNCRYPTO" != "true"  ] ; then
     echo "$SKIPPED8"
-    exit
+    exit 0
   fi
 
   checkAlgorithmsCode=`cat $LIBCQA_SCRIPT_DIR/CheckAlgorithms.java | sed -e "s/'//g"` # the ' characters are escaping and making problems, deleting them here
@@ -950,7 +950,7 @@ function checkHostAndContainerCryptoPolicy() {
   if [ "$OTOOL_OS_NAME" == "el" ] && [ "$OTOOL_cryptosetup" == "fips" ] ; then
     if [ "$hostCryptoPolicy" == "$containerCryptoPolicy" ] ; then
       echo "Crypto policy on RHEL host is the same as in the container ($containerCryptoPolicy), which was expected."
-      exit
+      exit 0
     else
       echo "Crypto policy on RHEL host ($hostCryptoPolicy) is not the same as in the container ($containerCryptoPolicy), which was unexpected."
       exit 1
@@ -959,7 +959,7 @@ function checkHostAndContainerCryptoPolicy() {
   # host is not RHEL in FIPS mode, the crypto policies may or may not match, just logging them
   else
     echo "Crypto policy on host is $hostCryptoPolicy, and in container $containerCryptoPolicy."
-    exit
+    exit 0
   fi
 }
 
@@ -973,7 +973,7 @@ function validateManualSettingFipsWithNoCrash() {
   if [ "$OTOOL_OS_NAME" == "el" ] && [ "$OTOOL_cryptosetup" == "fips" ] ; then
     if [ "$containerReturnCode" != 0 ] ; then
       echo "RHEL host is in FIPS, container returned $containerReturnCode, which was expected."
-      exit
+      exit 0
     else
       echo "RHEL host is in FIPS, container returned $containerReturnCode, which was unexpected, expected not zero."
       exit 1
@@ -983,7 +983,7 @@ function validateManualSettingFipsWithNoCrash() {
   elif [ "$OTOOL_OS_NAME" == "el" ] ; then
     if [ "$containerReturnCode" == 0 ] ; then
       echo "RHEL host is not in FIPS, container returned $containerReturnCode, which was expected."
-      exit
+      exit 0
     else
       echo "RHEL host is not in FIPS, container returned $containerReturnCode, which was unexpected, expected zero."
       exit 1
@@ -992,7 +992,7 @@ function validateManualSettingFipsWithNoCrash() {
   # other variants (for example Fedora), the behavior is just logged
   else
     echo "Non-RHEL host, undefined FIPS, container returned $containerReturnCode."
-    exit
+    exit 0
   fi
 }
 
