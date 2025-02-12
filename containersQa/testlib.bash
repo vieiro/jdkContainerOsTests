@@ -943,18 +943,18 @@ function setupAlgorithmTesting {
 
   if [ "$OTOOL_OS" == "el.9" -o "$OTOOL_OS" == "el.9z" ] ; then
     if [ "$OTOOL_cryptosetup" == "fips" ] ; then
-      algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el9ConfigFips.txt`
+      algorithmsConfigFileContent=`cat $LIBCQA_SCRIPT_DIR/el9ConfigFips.txt`
     else
-      algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el9ConfigLegacy.txt`
+      algorithmsConfigFileContent=`cat $LIBCQA_SCRIPT_DIR/el9ConfigLegacy.txt`
     fi
   elif [ "$OTOOL_OS" == "el.8z" -o  "$OTOOL_OS" == "el.8" ] ; then
     if [ "$OTOOL_cryptosetup" == "fips" ] ; then
-      algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el8ConfigFips.txt`
+      algorithmsConfigFileContent=`cat $LIBCQA_SCRIPT_DIR/el8ConfigFips.txt`
     else
-      algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el8ConfigLegacy.txt`
+      algorithmsConfigFileContent=`cat $LIBCQA_SCRIPT_DIR/el8ConfigLegacy.txt`
     fi
   else
-    echo "OTOOL_OS is not declared or unknown: $OTOOL_OS"
+    echo "OTOOL_OS or OTOOL_cryptosetup is not declared or unknown: $OTOOL_OS, $OTOOL_cryptosetup"
     exit 1
   fi
 }
@@ -1039,7 +1039,7 @@ function assertCryptoAlgorithms() {
   skipIfJreExecution
   set +x
 
-  commandAlgorithms="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && echo '$algorithmsConfigFile' > /tmp/config.txt && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert algorithms /tmp/config.txt"
+  commandAlgorithms="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && echo '$algorithmsConfigFileContent' > /tmp/config.txt && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert algorithms /tmp/config.txt"
 
   echo "runOnBaseDirBash $commandAlgorithms"
   runOnBaseDirBash "$commandAlgorithms" 2>&1| tee $REPORT_FILE
@@ -1050,7 +1050,7 @@ function assertCryptoProviders() {
   skipIfJreExecution
   set +x
 
-  commandProviders="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && echo '$algorithmsConfigFile' > /tmp/config.txt && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert providers /tmp/config.txt"
+  commandProviders="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && echo '$algorithmsConfigFileContent' > /tmp/config.txt && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert providers /tmp/config.txt"
 
   echo "runOnBaseDirBash $commandProviders"
   runOnBaseDirBash "$commandProviders" 2>&1| tee $REPORT_FILE
