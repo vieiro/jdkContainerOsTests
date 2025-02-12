@@ -940,6 +940,15 @@ function setupAlgorithmTesting {
 
   checkAlgorithmsCode=`cat $LIBCQA_SCRIPT_DIR/CheckAlgorithms.java | sed -e "s/'//g"` # the ' characters are escaping and making problems, deleting them here
   cipherListCode=`cat $LIBCQA_SCRIPT_DIR/CipherList.java`
+
+  if [ "$OTOOL_OS" == "el.9" -o "$OTOOL_OS" == "el.9z" ] ; then
+    algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el9Config.txt`
+  elif [ "$OTOOL_OS" == "el.8z" -o  "$OTOOL_OS" == "el.8" ] ; then
+    algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el8Config.txt`
+  else
+    echo "OTOOL_OS is not declared or unknown: $OTOOL_OS"
+    exit 1
+  fi
 }
 
 function checkHostAndContainerCryptoPolicy() {
@@ -996,15 +1005,33 @@ function validateManualSettingFipsWithNoCrash() {
   fi
 }
 
+function listCryptoAlgorithms() {
+  skipIfJreExecution
+  set +x
+
+  commandAlgorithms="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && echo '$algorithmsConfigFile' > /tmp/config.txt && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list algorithms"
+
+  echo "runOnBaseDirBash $commandAlgorithms"
+  runOnBaseDirBash "$commandAlgorithms" 2>&1| tee $REPORT_FILE
+  set -x
+}
+
+function listCryptoProviders() {
+  skipIfJreExecution
+  set +x
+
+  commandProviders="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && echo '$algorithmsConfigFile' > /tmp/config.txt && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms list providers"
+
+  echo "runOnBaseDirBash $commandProviders"
+  runOnBaseDirBash "$commandProviders" 2>&1| tee $REPORT_FILE
+  set -x
+}
+
 function assertCryptoAlgorithms() {
   skipIfJreExecution
   set +x
 
-  if [ "$OTOOL_OS" == "el.9" ] ; then
-    commandAlgorithms="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert algorithms el9"
-  else
-    commandAlgorithms="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert algorithms"
-  fi
+  commandAlgorithms="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && echo '$algorithmsConfigFile' > /tmp/config.txt && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert algorithms /tmp/config.txt"
 
   echo "runOnBaseDirBash $commandAlgorithms"
   runOnBaseDirBash "$commandAlgorithms" 2>&1| tee $REPORT_FILE
@@ -1015,11 +1042,7 @@ function assertCryptoProviders() {
   skipIfJreExecution
   set +x
 
-  if [ "$OTOOL_OS" == "el.9" ] ; then
-    commandProviders="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert providers el9"
-  else
-    commandProviders="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert providers"
-  fi
+  commandProviders="echo '$checkAlgorithmsCode' > /tmp/CheckAlgorithms.java && echo '$cipherListCode' > /tmp/CipherList.java && echo '$algorithmsConfigFile' > /tmp/config.txt && javac -d /tmp /tmp/CheckAlgorithms.java /tmp/CipherList.java && java -cp /tmp CheckAlgorithms assert providers /tmp/config.txt"
 
   echo "runOnBaseDirBash $commandProviders"
   runOnBaseDirBash "$commandProviders" 2>&1| tee $REPORT_FILE
