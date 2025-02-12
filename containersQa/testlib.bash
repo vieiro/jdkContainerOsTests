@@ -942,9 +942,17 @@ function setupAlgorithmTesting {
   cipherListCode=`cat $LIBCQA_SCRIPT_DIR/CipherList.java`
 
   if [ "$OTOOL_OS" == "el.9" -o "$OTOOL_OS" == "el.9z" ] ; then
-    algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el9Config.txt`
+    if [ "$OTOOL_cryptosetup" == "fips" ] ; then
+      algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el9ConfigFips.txt`
+    else
+      algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el9ConfigLegacy.txt`
+    fi
   elif [ "$OTOOL_OS" == "el.8z" -o  "$OTOOL_OS" == "el.8" ] ; then
-    algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el8Config.txt`
+    if [ "$OTOOL_cryptosetup" == "fips" ] ; then
+      algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el8ConfigFips.txt`
+    else
+      algorithmsConfigFile=`cat $LIBCQA_SCRIPT_DIR/el8ConfigLegacy.txt`
+    fi
   else
     echo "OTOOL_OS is not declared or unknown: $OTOOL_OS"
     exit 1
