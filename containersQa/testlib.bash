@@ -630,6 +630,39 @@ function s2iBinaryCopy() {
   rm -rf $d
 }
 
+function s2iHsPerfDataBuild() {
+  prepareS2I
+  setUser
+  if [ "x$s2iBin" == "xundef" -o "x$s2iBin" == "x" ] ; then
+    echo $SKIPPED
+    return
+  fi
+  local d=`mktemp -d`
+  pushd $d
+    DF=s2iDockerFile
+
+    $s2iBin build --pull-policy never --as-dockerfile $DF --context-dir=$CONTEXTDIR -r=${rev} \
+                   --assemble-user 185 --loglevel 1 --image-scripts-url image:///usr/local/s2i "$APP_SRC" "$BASEIMG" "$OUTIMG"
+
+    $PD_PROVIDER build -t $OUTIMG -f $DF
+  popd
+  rm -rf $d
+  set +e
+  $PD_PROVIDER run -i $OUTIMG stat /tmp/hsperfdata_$USERNAME #| grep -e "stat: cannot statx '/tmp/hsperfdata_$USERNAME': No such file or directory"
+  set -e
+}
+
+function getOldHsPerfDataStatLog() {
+  getOldLog 216_s2iHsperfdataDirRemovalBuild.sh
+}
+
+function s2iHsPerfDataCheck() {
+  skipIfJreExecution
+  skipIfRhel7Execution
+  setUser
+  cat $(getOldHsPerfDataStatLog) | cleanBashOutputs | grep -e "stat: cannot statx '/tmp/hsperfdata_$USERNAME': No such file or directory"
+}
+
 function s2iLocalDeps() {
   skipIfJreExecution
   MAIN="JAVA_MAIN_CLASS=org.judovana.calendarmaker.App"
@@ -685,6 +718,18 @@ function s2iBinaryOnlyMode() {
   OUTIMG="s2i-out"
   BASEIMG="$HASH"
   s2iBinaryCopy
+}
+
+function s2ihsperfdataDirRemovalBuild() {
+  # We only want to run this check on ubi 9 or higher images.
+  skipIfJreExecution
+  skipIfRhel7Execution
+  APP_SRC="https://github.com/jboss-container-images/openjdk-test-applications"
+  CONTEXTDIR="spring-boot-sample-simple"
+  rev="master"
+  OUTIMG="s2i-out"
+  BASEIMG="$HASH"
+  s2iHsPerfDataBuild
 }
 
 function getS2iLocalDepsBuildLog() {
