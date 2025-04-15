@@ -797,7 +797,7 @@ function checkHardcodedJdks() {
     JRE_8_VERSION='1.8.0_452-b09'
     JRE_11_VERSION='11.0.27+6-LTS'
     JRE_17_VERSION='17.0.15+6-LTS'
-    JRE_21_VERSION='21.0.7+6-LTS'  #temp fix until the next cpu.
+    JRE_21_VERSION='21.0.7+6-LTS'
     cat $(getOldJavaVersionLog)
     cat $(getOldJavaVersionLog) | grep "openjdk version"
     cat $(getOldJavaVersionLog) | grep -e "$JRE_11_VERSION" -e "$JRE_8_VERSION" -e "$JRE_17_VERSION" -e "$JRE_21_VERSION"
