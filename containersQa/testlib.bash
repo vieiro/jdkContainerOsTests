@@ -116,11 +116,41 @@ function skipIfRhel7OsExecution() {
   fi
 }
 
+#
+# Create a user session, so podman/cgropus2 works properly.
+# This solves problems like: "sd-bus call: Interactive authentication required"
+#
+# 1496-STEP 5/8: RUN chown -R 1001:0 /tmp/src
+# 1497:error running container: from /usr/bin/crun creating container for [/bin/sh -c chown -R 1001:0 /tmp/src]: sd-bus call: Interactive authentication required.: Permission denied
+# 1498-: exit status 1
+# 1499:time="2025-06-25T13:14:21Z" level=error msg="did not get container create message from subprocess: EOF"
+#
+# See https://www.redhat.com/en/blog/sudo-rootless-podman
+# See https://github.com/containers/podman/issues/19556
+#
+function prepareUserSession() {
+  if [[ -z $USERNAME ]] ; then
+    echo "prepareUserSession: No username specified"
+    return
+  fi
+  echo "prepareUserSession for user \"$USERNAME\""
+  loginctl enable-linger $USERNAME 
+  if [[ $? -ne 0 ]]; then
+    echo "prepareUserSession: FAILED. loginctl enable-linger exit status $?"
+    return
+  fi
+  echo "prepareUserSession: DBUS_SESSION_BUS_ADDRESS: \"$DBUS_SESSION_BUS_ADDRESS\" "
+  echo "prepareUserSession: XDG_RUNTIME_DIR         : \"$XDG_RUNTIME_DIR\" "
+  echo "prepareUserSession: OK."
+}
+
 ## setUser: Check which OS version of container we are testing. Based on this, assign
 ##          the user for validation and further testing (s2i builds).
 function setUser() {
   if [ ! "x$OVERWRITE_USER" == x ] ; then
     export USERNAME="$OVERWRITE_USER"
+    echo "Username to test is: \"$USERNAME\" (overwritten)"
+    prepareUserSession
     return
   fi
   if $PD_PROVIDER inspect $HASH --format "{{.Labels.name}}" | grep -e 'ubi9' -e 'rhel9' ; then
@@ -128,7 +158,8 @@ function setUser() {
   else
       export USERNAME='jboss'
   fi
-  echo "Username to test is: $USERNAME."
+  echo "Username to test is: \"$USERNAME\""
+  prepareUserSession
 }
 
 function podmanVersion() {
