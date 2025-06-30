@@ -136,14 +136,10 @@ function prepareUserSession() {
     echo "$PD_PROVIDER version:"
     $PD_PROVIDER --version
   fi
-  if [[ -z $USER ]] ; then
-    echo "prepareUserSession: No username specified"
-  else
-    echo "prepareUserSession for user \"$USER\""
-    loginctl enable-linger $USER || echo "prepareUserSession: FAILED"
-    echo "prepareUserSession: DBUS_SESSION_BUS_ADDRESS: \"$DBUS_SESSION_BUS_ADDRESS\" "
-    echo "prepareUserSession: XDG_RUNTIME_DIR         : \"$XDG_RUNTIME_DIR\" "
-  fi
+  echo "prepareUserSession for user \"$USER\""
+  loginctl enable-linger $USER || echo "prepareUserSession: FAILED"
+  echo "prepareUserSession: DBUS_SESSION_BUS_ADDRESS: \"$DBUS_SESSION_BUS_ADDRESS\" "
+  echo "prepareUserSession: XDG_RUNTIME_DIR         : \"$XDG_RUNTIME_DIR\" "
 }
 
 ## setUser: Check which OS version of container we are testing. Based on this, assign
