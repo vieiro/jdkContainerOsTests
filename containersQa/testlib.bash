@@ -84,6 +84,7 @@ function pretest() {
   else
     export PD_PROVIDER=$OTOOL_CONTAINER_RUNTIME
   fi
+  prepareUserSession
 }
 
 function setup() {
@@ -129,19 +130,16 @@ function skipIfRhel7OsExecution() {
 # See https://github.com/containers/podman/issues/19556
 #
 function prepareUserSession() {
-  if [[ -z $USERNAME ]] ; then
-    echo "prepareUserSession: No username specified"
-    return
+  if [[ -z $PD_PROVIDER ]]; then
+    echo "prepareUserSession: No PD_PROVIDER set"
+  else
+    echo "$PD_PROVIDER version:"
+    $PD_PROVIDER --version
   fi
-  echo "prepareUserSession for user \"$USERNAME\""
-  loginctl enable-linger $USERNAME 
-  if [[ $? -ne 0 ]]; then
-    echo "prepareUserSession: FAILED. loginctl enable-linger exit status $?"
-    return
-  fi
+  echo "prepareUserSession for user \"$USER\""
+  loginctl enable-linger $USER || echo "prepareUserSession: FAILED"
   echo "prepareUserSession: DBUS_SESSION_BUS_ADDRESS: \"$DBUS_SESSION_BUS_ADDRESS\" "
   echo "prepareUserSession: XDG_RUNTIME_DIR         : \"$XDG_RUNTIME_DIR\" "
-  echo "prepareUserSession: OK."
 }
 
 ## setUser: Check which OS version of container we are testing. Based on this, assign
@@ -149,8 +147,6 @@ function prepareUserSession() {
 function setUser() {
   if [ ! "x$OVERWRITE_USER" == x ] ; then
     export USERNAME="$OVERWRITE_USER"
-    echo "Username to test is: \"$USERNAME\" (overwritten)"
-    prepareUserSession
     return
   fi
   if $PD_PROVIDER inspect $HASH --format "{{.Labels.name}}" | grep -e 'ubi9' -e 'rhel9' ; then
@@ -159,7 +155,6 @@ function setUser() {
       export USERNAME='jboss'
   fi
   echo "Username to test is: \"$USERNAME\""
-  prepareUserSession
 }
 
 function podmanVersion() {
