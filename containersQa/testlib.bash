@@ -177,7 +177,11 @@ function getHashFromImageId() {
 }
 
 function pullImage() {
-   $PD_PROVIDER pull $JDK_CONTAINER_IMAGE
+   if [[ "x$PD_PROVIDER" == "xpodman" ]]; then
+       $PD_PROVIDER pull --tls-verify=false $JDK_CONTAINER_IMAGE
+   else
+       $PD_PROVIDER pull $JDK_CONTAINER_IMAGE
+   fi
 }
 
 function checkImage() {
