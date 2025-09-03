@@ -810,9 +810,17 @@ function checkHardcodedMaven() {
   cat $(getOldMvnVersionLog)
   cat $(getOldMvnVersionLog) | grep "Apache Maven"
   if [ `getOsMajor` -eq 9 ] ; then
-    cat $(getOldMvnVersionLog) | grep "Apache Maven 3.8"
+    if [[ $OTOOL_JDK_VERSION -ne 11 ]]; then
+       cat $(getOldMvnVersionLog) | grep "Apache Maven 3.9"
+    else
+       cat $(getOldMvnVersionLog) | grep "Apache Maven 3.8"
+    fi
   elif [ `getOsMajor` -eq 8 ] ; then
-    cat $(getOldMvnVersionLog) | grep "Apache Maven 3.8"
+    if [[ $OTOOL_JDK_VERSION -ne 11 ]]; then
+       cat $(getOldMvnVersionLog) | grep "Apache Maven 3.9"
+    else
+       cat $(getOldMvnVersionLog) | grep "Apache Maven 3.8"
+    fi
   elif [ `getOsMajor` -eq 7 ] ; then
     cat $(getOldMvnVersionLog) | grep "Apache Maven 3.6"
   else
