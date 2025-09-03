@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function chooseAlgorithmConfigFile() {
-  if [ "$#" -ne 2 ] ; then
-    echo "Needs two arguments. First one should be the version of RHEL and second one should be 'true' or 'fips', if FIPS mode is on."
+  if [ "$#" -ne 3 ] ; then
+    echo "Needs three arguments. First one should be the version of RHEL and second one should be 'true' or 'fips', if FIPS mode is on. Last one should be the java version."
     exit 1
   fi
 
@@ -14,13 +14,21 @@ function chooseAlgorithmConfigFile() {
     fi
   elif [ "$1" == "el.8" -o "$1" == "el.8z" -o "$1" == "el.8z2" -o  "$1" == "el.8z4" -o  "$1" == "el.8z6" -o  "$1" == "el.8z8" ] ; then
     if [ "$2" == "true" -o "$2" == "fips" ] ; then
-      echo "el8ConfigFips.txt"
+      if [ "$3" == "8" -o "$3" == "11" ] ; then
+	echo "el8ConfigFips11Older.txt"
+      else
+        echo "el8ConfigFips.txt"
+      fi
     else
       echo "el8ConfigLegacy.txt"
     fi
-  elif [ "$1" == "el.9" -o "$1" == "el.9z" -o "$1" == "el.9z2" ] ; then
+  elif [ "$1" == "el.9" -o "$1" == "el.9z" -o "$1" == "el.9z2" -o "$1" == "el.9z0" ] ; then
     if [ "$2" == "true" -o "$2" == "fips" ] ; then
-      echo "el9ConfigFips.txt"
+      if [ "$3" == "8" -o "$3" == "11" ] ; then
+        echo "el9ConfigFips11Older.txt"
+      else
+        echo "el9ConfigFips.txt"
+      fi
     else
       echo "el9ConfigLegacy.txt"
     fi
@@ -42,4 +50,4 @@ function chooseAlgorithmConfigFile() {
   fi
 }
 
-chooseAlgorithmConfigFile "${1}" "${2}"
+chooseAlgorithmConfigFile "${1}" "${2}" "${3}"
