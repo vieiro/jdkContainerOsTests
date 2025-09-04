@@ -1,33 +1,49 @@
 #!/bin/bash
 
+## resolve folder of this script, following all symlinks,
+## http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SCRIPT_SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SCRIPT_SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  SCRIPT_DIR="$( cd -P "$( dirname "$SCRIPT_SOURCE" )" && pwd )"
+  SCRIPT_SOURCE="$(readlink "$SCRIPT_SOURCE")"
+  # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  [[ $SCRIPT_SOURCE != /* ]] && SCRIPT_SOURCE="$SCRIPT_DIR/$SCRIPT_SOURCE"
+done
+readonly SCRIPT_DIR="$( cd -P "$( dirname "$SCRIPT_SOURCE" )" && pwd )"
+source ${SCRIPT_DIR}/get_system_info_script.sh
+
 function chooseAlgorithmConfigFile() {
-  if [ "$#" -ne 3 ] ; then
-    echo "Needs three arguments. First one should be the version of RHEL and second one should be 'true' or 'fips', if FIPS mode is on. Last one should be the java version."
-    exit 1
+  # One optional argument - OS version in case you want to circumvent the OS of the system (e.g. pass the build-OS version for containers)
+  if [[ "x${1}" != "x" ]] ; then
+    OS_version_major="${1}"
+  else
+    OS_version_major="$(get_os_major_version)"
   fi
-  
+
   osPart="fedora"
-  if [ "20" -ge "$1" ] ; then
-    osPart="el$1"
-    if [ "$1" -gt 10 ] ; then
-      echo "Unknown/unsupported RHEL version was specified: $1"
+  if [ "20" -ge "$OS_version_major" ] ; then
+    osPart="el$OS_version_major"
+    if [ "$OS_version_major" -gt 10 ] ; then
+      echo "Unknown/unsupported RHEL version was specified: $OS_version_major"
       exit 1
     fi
   fi
 
-  fipsPart="Legacy"
-  if [ "$2" == "true" -o "$2" == "fips" ] ; then
-    fipsPart="Fips"
+  fips_enabled="$(get_fips_status)"
+  fipsPart="legacy"
+  if [ "$fips_enabled" == "true" ] ; then
+    fipsPart="fips"
   fi
 
+  jdk_version="$(get_jdk_major_version)"
   # so far only fips had differences with older jdks
-  suffix=""
-  if [ "$3" == "8" -o "$3" == "11" ] ; then
-    suffix="OldJdks"
+  suffix="genericJdk"
+  if [ "$jdk_version" == "8" -o "$jdk_version" == "11" ] ; then
+    suffix="jdk${jdk_version}"
   fi
 
-  echo "${osPart}Config${fipsPart}${suffix}.txt"
+  echo "${osPart}-${fipsPart}-${suffix}.cfg"
 
 }
 
-chooseAlgorithmConfigFile "${1}" "${2}" "${3}"
+chooseAlgorithmConfigFile "${1}"
