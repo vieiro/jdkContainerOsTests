@@ -37,7 +37,7 @@ function chooseAlgorithmConfigFile() {
 
   jdk_version="$(get_jdk_major_version)"
   # so far only fips had differences with older jdks
-  suffix="genericJdk"
+  suffix="jdkX"
   if [ "$jdk_version" == "8" -o "$jdk_version" == "11" ] ; then
     suffix="jdk${jdk_version}"
   fi

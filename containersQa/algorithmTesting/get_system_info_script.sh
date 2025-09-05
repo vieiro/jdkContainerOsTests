@@ -3,19 +3,34 @@
 # supporting script with functions to extract three information needed for choosing the correct config
 # 1. Get major OS version
 get_os_major_version() {
-    if [ -f /etc/redhat-release ]; then
-        os_version=$(grep -oE '[0-9]+' /etc/redhat-release | head -1)
-        echo "$os_version"
-    elif [ -f /etc/os-release ]; then
-        source /etc/os-release
-        if [[ -n "$VERSION_ID" ]]; then
-            echo "${VERSION_ID%%.*}"
-        else
-            echo "unknown"
-        fi
-    else
-        echo "unknown"
-    fi
+  ID=$(get_os_name)
+  if [[ "$ID" == windows ]] ; then
+    VERSION_ID=1995.5
+  else
+    source /etc/os-release
+  fi
+  echo $VERSION_ID | sed "s/\..*//" 
+}
+
+# following two functions are just in case they are ever needed in the future
+
+# 1.1 get OS arch
+get_os_arch(){
+  echo `uname -m`
+}
+
+# 1.2 get OS name
+get_os_name(){
+  OS=`uname -s`
+  case "$OS" in 
+    Windows_* | CYGWIN_NT* )
+      ID="windows"
+      ;;
+    * )
+    source /etc/os-release
+    ;;
+esac
+echo $ID
 }
 
 # 2. Check if FIPS crypto policy is enabled true/false
@@ -59,3 +74,5 @@ get_jdk_major_version() {
 echo "OS_MAJOR_VERSION=$(get_os_major_version)"
 echo "FIPS_ENABLED=$(get_fips_status)"
 echo "JDK_MAJOR_VERSION=$(get_jdk_major_version)"
+echo "OS_ARCH"=$(get_os_arch)
+echo "OS_NAME"=$(get_os_name)
