@@ -6,8 +6,6 @@ get_os_major_version() {
   ID=$(get_os_name)
   if [[ "$ID" == windows ]] ; then
     VERSION_ID=1995.5
-  else
-    source /etc/os-release
   fi
   echo $VERSION_ID | sed "s/\..*//" 
 }
@@ -70,9 +68,3 @@ get_jdk_major_version() {
         echo "${version%%.*}"
     fi
 }
-
-echo "OS_MAJOR_VERSION=$(get_os_major_version)"
-echo "FIPS_ENABLED=$(get_fips_status)"
-echo "JDK_MAJOR_VERSION=$(get_jdk_major_version)"
-echo "OS_ARCH"=$(get_os_arch)
-echo "OS_NAME"=$(get_os_name)
