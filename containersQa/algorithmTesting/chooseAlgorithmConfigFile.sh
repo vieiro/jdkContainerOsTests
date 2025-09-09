@@ -13,9 +13,13 @@ readonly SCRIPT_DIR="$( cd -P "$( dirname "$SCRIPT_SOURCE" )" && pwd )"
 source ${SCRIPT_DIR}/get_system_info_script.sh
 
 function chooseAlgorithmConfigFile() {
-  # One optional argument - OS version in case you want to circumvent the OS of the system (e.g. pass the build-OS version for containers)
-  if [[ "x${1}" != "x" ]] ; then
-    OS_version_major="${1}"
+  if [ "$#" -lt 1 -o "$#" -gt 2 ] ; then
+    echo "Two arguments. First one should be the information whether we need fips or non-fips listing, the other would be the version of OS we want to test, if not provided OS of current system will be extracted."
+    exit 1
+  fi
+
+  if [[ "x${2}" != "x" ]] ; then
+    OS_version_major="${2}"
   else
     OS_version_major="$(get_os_major_version)"
   fi
@@ -29,14 +33,18 @@ function chooseAlgorithmConfigFile() {
     fi
   fi
 
-  fips_enabled="$(get_fips_status)"
+  if [[ "x${1}" != "x" ]] ; then
+    fips_enabled="${1}"
+  else
+    fips_enabled="$(get_fips_status)"
+  fi
+  
   fipsPart="legacy"
-  if [ "$fips_enabled" == "true" ] ; then
+  if [ "$fips_enabled" == "true" -o "$fips_enabled" == "fips" ] ; then
     fipsPart="fips"
   fi
 
   jdk_version="$(get_jdk_major_version)"
-  # so far only fips had differences with older jdks
   suffix="ojdkX"
   if [ "$jdk_version" == "8" -o "$jdk_version" == "11" ] ; then
     suffix="ojdk${jdk_version}"
@@ -46,4 +54,4 @@ function chooseAlgorithmConfigFile() {
 
 }
 
-chooseAlgorithmConfigFile "${1}"
+chooseAlgorithmConfigFile "${1}" "${2}"
